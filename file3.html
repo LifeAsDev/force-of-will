@@ -1,0 +1,49 @@
+<div id="chat" class="chat-container">
+    <div id="messages" class="messages"></div>
+
+    <div class="input-row">
+        <input id="chatInput" type="text" placeholder="Chat..." autocomplete="off"/>
+        <button id="sendBtn">Send</button>
+    </div>
+</div>
+<script>
+window.ChatUI ??= {
+
+    init() {
+
+
+        this.messagesEl = document.getElementById("messages");
+        this.inputEl    = document.getElementById("chatInput");
+        this.sendBtn    = document.getElementById("sendBtn");
+
+        this.sendBtn.addEventListener("click", () => this.sendMessage());
+        this.inputEl.addEventListener("keydown", e => {
+            if (e.key === "Enter") this.sendMessage();
+        });
+    },
+
+    addMessage(text, isOpponent = false) {
+        const div = document.createElement("div");
+        div.className = "message";
+        if (isOpponent) div.classList.add("opponent");
+
+        div.innerHTML = text;
+        this.messagesEl.appendChild(div);
+        this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+    },
+
+    sendMessage() {
+        const txt = this.inputEl.value.trim();
+        if (!txt) return;
+
+        this.addMessage(txt);
+
+        if (window.onChatSend) window.onChatSend(txt);
+
+        this.inputEl.value = "";
+    }
+};
+
+// inicializar cuando el container aparece
+window.ChatUI.init();
+</script>

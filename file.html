@@ -1,0 +1,74 @@
+<main class="app">
+
+    <header class="app-header">
+        <h1>Deck Creator</h1>
+        <div class="header-actions">
+            <button id="btn-export">Export Deck</button>
+            <button id="btn-import">Import Deck</button>
+            <button id="btn-clear">Clear All</button>
+        </div>
+    </header>
+    <div class="bottomApp">
+        <div class="left">
+            <section class="search-area">
+                <input id="search" placeholder="Search card name..." autofocus autocomplete="off"/>
+                <div id="results" class="results" role="list"></div>
+            </section> <!-- TEMPLATE FOR RESULTS -->
+            <section class="startGame">
+                <button id="startGame">Play</button>
+            </section>
+            <template id="result-item-tpl">
+                <div class="result-item" tabindex="0">
+                    <div class="name"></div>
+                    <div class="meta"></div>
+
+                    <div class="buttons">
+                        <button class="btn-add" data-section="ruler">Ruler</button>
+                        <button class="btn-add" data-section="main">Main</button>
+                        <button class="btn-add" data-section="stones">Stones</button>
+                        <button class="btn-add" data-section="runes">Runes</button>
+                        <button class="btn-add" data-section="side">Side</button>
+                    </div>
+
+                </div>
+            </template>
+        </div>
+
+
+        <div class="sections">
+
+            <div class="section" data-section="ruler">
+                <h2>Ruler <span class="count">0</span></h2>
+                <div class="list" id="ruler-list"></div>
+
+            </div>
+
+            <div class="section" data-section="main">
+                <h2>Main <span class="count">0</span></h2>
+                <div class="list" id="main-list"></div>
+
+            </div>
+
+            <div class="section" data-section="stones">
+                <h2>Stones <span class="count">0</span></h2>
+                <div class="list" id="stones-list"></div>
+
+            </div>
+
+            <div class="section" data-section="runes">
+                <h2>Runes <span class="count">0</span></h2>
+                <div class="list" id="runes-list"></div>
+
+            </div>
+
+            <div class="section" data-section="side">
+                <h2>Side Deck <span class="count">0</span></h2>
+                <div class="list" id="side-list"></div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+</main>
