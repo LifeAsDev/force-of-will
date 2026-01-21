@@ -343,48 +343,46 @@ class DeckCreator {
         for (const l of lines) {
             if (!l) continue;
 
-            // detect section headers like: //ruler, //stones, //runes, //deck
+            // ---- HEADER ----
             const header = l.match(/^\/\/\s*(\w+)/i);
             if (header) {
                 section = header[1].toLowerCase();
-
-                if (!this.deck[section]) {
-                    this.deck[section] = {}; // sigue siendo objeto
-                }
-
+                if (!this.deck[section]) continue;
                 continue;
             }
 
-            // detect lines like: "4 Something Something"
+            // ---- PARSE QTY / NAME ----
+            let qty = 1;
+            let name = l;
+
             const m = l.match(/^(\d+)\s+(.+)$/);
             if (m) {
-                const qty = parseInt(m[1], 10);
-                const name = m[2];
-                if (this.CARD_DATA.every(c => !c.name.toLowerCase().includes(name.toLowerCase()))
-                ) {
-                    console.log(name + " no encontrado");
-                    continue
-                }
-                // suma cantidad dentro del objeto
-                if (!this.deck[section][name]) {
-                    this.deck[section][name] = 0;
-                }
-
-                this.deck[section][name] += qty;
-
-            } else {
-                // tarjeta sin cantidad → cantidad = 1
-                const name = l;
-                if (this.CARD_DATA.every(c => !c.name.toLowerCase().includes(name.toLowerCase()))
-                ) { continue }
-                if (!this.deck.main[name]) {
-                    this.deck.main[name] = 0;
-                }
-
-                this.deck.main[name] += 1;
+                qty = parseInt(m[1], 10);
+                name = m[2];
             }
+
+            // ---- FIND CARD ----
+            const card = this.findCardByName(name);
+            if (!card) {
+                console.log(`"${name}" no encontrada`);
+                continue;
+            }
+
+            // ---- ONLY REQUIRE: HAS TYPE ----
+            if (!card.type) {
+                console.log(`"${name}" ignorada (no tiene type)`);
+                continue;
+            }
+
+            // ---- ADD ----
+            if (!this.deck[section][card.name]) {
+                this.deck[section][card.name] = 0;
+            }
+
+            this.deck[section][card.name] += qty;
         }
     }
+
 
 
     saveToStorage() {
