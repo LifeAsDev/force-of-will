@@ -168,6 +168,22 @@ const scriptsInEvents = {
 
 	},
 
+	async EventRoomList_Event1_Act5(runtime, localVars)
+	{
+			runtime.__pendingAbilityResolve = null;
+		
+			// 2️⃣ Estado lógico del motor
+			runtime.lifeAsDev.resolve = [];
+			runtime.lifeAsDev.endTurnAbilitys = [];
+			runtime.lifeAsDev.cardInstances = {};
+			runtime.lifeAsDev.event = {};
+			runtime.lifeAsDev.keywordLayer = new KeywordLayer(runtime);
+			runtime.oncePerTurn = new Set();
+			runtime.lifeAsDev.DeckCreator.reset?.();
+			runtime.lifeAsDev.DeckCreator.loadFromStorage?.();
+		
+	},
+
 	async EventRoomList_Event4_Act3(runtime, localVars)
 	{
 		Lobby.goToDeck = () => {
@@ -252,825 +268,6 @@ const scriptsInEvents = {
 		window.onChatSend = (msg) => {
 		    runtime.callFunction("sendChatMessage",msg);
 		};
-	},
-
-	async EventAutomatic_Event86_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event90_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event91_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event95_Act2(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event96_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event130_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event191(runtime, localVars)
-	{
-		const message = {
-			type:localVars.type,
-			p1:localVars.p1,
-			p2:localVars.p2,
-			p3:localVars.p3,
-			p4:localVars.p4,
-			p5:localVars.p5,
-		    p6:localVars.p6,
-		    p7:localVars.p7
-		}
-		localVars.message = JSON.stringify(message);
-	},
-
-	async EventAutomatic_Event278_Act2(runtime, localVars)
-	{
-		runtime.resolveAbility();
-		
-	},
-
-	async EventAutomatic_Event301_Act3(runtime, localVars)
-	{
-		runtime.resolveAbility(localVars.option);
-	},
-
-	async EventAutomatic_Event313_Act2(runtime, localVars)
-	{
-		runtime.oncePerTurn?.clear();
-	},
-
-	async EventAutomatic_Event355_Act1(runtime, localVars)
-	{
-		  const card = {
-		    card: 
-		    {},
-		   cardUID: "cardUID",
-		    flags: {owner:runtime.globalVars.playerTurn}
-		};
-		          runtime.lifeAsDev.resolve.unshift({
-		                    ability:discardEndTurnTo7Cards,
-		                    event: structuredClone(runtime.lifeAsDev.event),
-		                    card
-		                });
-	},
-
-	async EventAutomatic_Event356_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.keywordLayer.onEndOfTurn();
-		
-		runtime.lifeAsDev.event = {
-		    type: "endTurn",
-		    gameTurn: runtime.globalVars.gameTurn
-		};
-		
-		
-		
-	},
-
-	async EventAutomatic_Event356_Act5(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event362_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.decks = {};
-	},
-
-	async EventAutomatic_Event363_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.decks[localVars.arrType] = [];
-	},
-
-	async EventAutomatic_Event364_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.decks[localVars.arrType].push(runtime.lifeAsDev.card);
-	},
-
-	async EventAutomatic_Event366(runtime, localVars)
-	{
-const resolving = runtime.lifeAsDev.resolve.shift();
-const mainOwner = runtime.globalVars.mainOwner;
-const ctx = {
-    self: {
-        card: resolving.card.card,
-        cardUID: resolving.card.cardUID,
-        flags: resolving.card.flags
-    },
-    trigger: localVars.trigger,
-    allCards: [...runtime.lifeAsDev.cards],
-    event: resolving.event,
-    runtime,
-    decks: runtime.lifeAsDev.decks
-};
-const type = resolving.card.card.type;
-
-
-runtime.callFunction("resolvingEffect",resolving.card.cardUID);
-
-if(resolving.cancelled) {
-    runtime.callFunction("destroyResolveEffect",resolving.card.cardUID);
-    return runtime.callFunction("resolveChase");
-    }
-
-await op.runAbility(ctx, resolving.ability);
-
-runtime.callFunction("destroyResolveEffect",resolving.card.cardUID);
-
-if (type === "Rune"||type ==="Chant" || type === "Master Rune") {
-    const zone = `discard${resolving.card.flags.owner}`;
-
-    runtime.callFunction(
-        "cardToDeck",
-        resolving.card.cardUID,
-        zone,
-        1
-    );
-}
-
-runtime.callFunction("resolveChase");
-
-	},
-
-	async EventAutomatic_Event377_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.resolve = [];
-	},
-
-	async EventAutomatic_Event386_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event386_Act3(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event391(runtime, localVars)
-	{
-		if(runtime.lifeAsDev.resolve.length > 0){
-		    runtime.callFunction("resolveInstance",runtime.lifeAsDev.resolve[0].card.cardUID,"");
-		}else runtime.callFunction("endChase");
-	},
-
-	async EventAutomatic_Event407_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event408(runtime, localVars)
-	{
-		for(let card of runtime.lifeAsDev.resolve){
-		    runtime.callFunction("triggerResolveEffect", card.card.cardUID);
-		}
-		
-	},
-
-	async EventAutomatic_Event420_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event420_Act2(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event421_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event428_Act1(runtime, localVars)
-	{
-		localVars.checked = runtime.lifeAsDev.checked?1:0;
-		
-	},
-
-	async EventAutomatic_Event437_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event512_Act4(runtime, localVars)
-	{
-		runtime.callFunction("showOptions",localVars.stringify+"|");
-	},
-
-	async EventAutomatic_Event515(runtime, localVars)
-	{
-		runtime.lifeAsDev.costs = JSON.parse(localVars.cost);
-		localVars.costCount =runtime.lifeAsDev.costs.length ;
-	},
-
-	async EventAutomatic_Event516_Act2(runtime, localVars)
-	{
-		localVars.produce = runtime.lifeAsDev.costs[localVars.index];
-	},
-
-	async EventAutomatic_Event518_Act4(runtime, localVars)
-	{
-		runtime.resolveAbility(localVars.cost);
-	},
-
-	async EventAutomatic_Event534_Act1(runtime, localVars)
-	{
-		runtime.resolveAbility(1);
-	},
-
-	async EventAutomatic_Event535_Act5(runtime, localVars)
-	{
-		runtime.resolveAbility(0);
-	},
-
-	async EventAutomatic_Event552_Act1(runtime, localVars)
-	{
-		localVars.cardDataStringify = JSON.stringify(runtime.lifeAsDev.cardInstances);
-	},
-
-	async EventAutomatic_Event614_Act1(runtime, localVars)
-	{
-		localVars.checked = runtime.lifeAsDev.checked?1:0;
-		
-	},
-
-	async EventAutomatic_Event638_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event640_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event641_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event643_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event645_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event646_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event648_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event650_Act1(runtime, localVars)
-	{
-		for (let card of runtime.lifeAsDev.cards) {
-		    const ctx = {
-		        self: card,
-		        trigger: "checkCost",
-		        allCards: [...runtime.lifeAsDev.cards],
-		        runtime,
-		        event: runtime.lifeAsDev.event
-		    };
-		
-		    if (!card.card.abilities) continue;
-		    for (const ability of card.card.abilities) {
-		        if (ability.trigger === "automatic") {
-		            const push = op.runAbilitySync(ctx, ability);
-		         
-		            if (push) {
-		                runtime.globalVars.canPay = 1;
-		                runtime.lifeAsDev.resolve.unshift({
-		                    ability,
-		                    event: structuredClone(runtime.lifeAsDev.event),
-		                    card
-		                });
-		
-		            }
-		        }
-		    }
-		}
-		
-		localVars.count = runtime.lifeAsDev.resolve.length;
-	},
-
-	async EventAutomatic_Event652_Act1(runtime, localVars)
-	{
-		for (let card of runtime.lifeAsDev.cards) {
-		    const ctx = {
-		        self: card,
-		        trigger: "continuous",
-		        allCards: [...runtime.lifeAsDev.cards],
-		        runtime,
-		        event: runtime.lifeAsDev.event
-		    };
-		
-		    if (!card.card.abilities) continue;
-		    for (const ability of card.card.abilities) {
-		        if (ability.trigger === "continuous") {
-		            const push = op.runAbility(ctx, ability);
-		       
-		        }
-		    }
-		}
-		
-		localVars.count = runtime.lifeAsDev.resolve.length;
-	},
-
-	async EventAutomatic_Event668_Act3(runtime, localVars)
-	{
-		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
-		
-		runtime.lifeAsDev.cardInstances[localVars.cardUID] = 
-		structuredClone(cardData);
-		
-	},
-
-	async EventAutomatic_Event668_Act4(runtime, localVars)
-	{
-		 const card = runtime.lifeAsDev.cardInstances[localVars.cardUID];
-		
-		runtime.lifeAsDev.keywordLayer.initFromCard(
-		  localVars.cardUID,
-		  card
-		);
-		
-	},
-
-	async EventAutomatic_Event669_Act9(runtime, localVars)
-	{
-		const cardInstance = structuredClone(runtime.lifeAsDev.card);
-		
-		runtime.lifeAsDev.event = {
-		    type: "enter",
-		    cards: [cardInstance]
-		};
-		
-	},
-
-	async EventAutomatic_Event669_Act10(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event672_Act3(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event675_Act11(runtime, localVars)
-	{
-		const cardInstance = structuredClone(runtime.lifeAsDev.card);
-		
-		runtime.lifeAsDev.event = {
-		    type: "enter",
-		    cards: [cardInstance]
-		};
-		
-	},
-
-	async EventAutomatic_Event686(runtime, localVars)
-	{
-		runtime.lifeAsDev.resolving = {
-		    ability: runtime.lifeAsDev.card.card.abilities[localVars.index],
-		    event: structuredClone(runtime.lifeAsDev.event),
-		    card: runtime.lifeAsDev.card
-		};
-		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
-	},
-
-	async EventAutomatic_Event688(runtime, localVars)
-	{
-		runtime.lifeAsDev.resolving = {
-		    ability: runtime.lifeAsDev.card.card.abilities[localVars.skillIndex],
-		    event: structuredClone(runtime.lifeAsDev.event),
-		    card: runtime.lifeAsDev.card
-		};
-		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
-		
-		
-	},
-
-	async EventAutomatic_Event697_Act12(runtime, localVars)
-	{
-		// Obtener arrays separados
-		const cardUID = localVars.cardsUID;
-		const flags = JSON.parse(localVars.dictionary);
-		
-		const cardData = runtime.lifeAsDev.cardInstances[cardUID];
-		
-		runtime.lifeAsDev.card = {
-		    card: cardData,
-		    cardUID,
-		    flags: flags.data
-		};
-	},
-
-	async EventAutomatic_Event698_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event700_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event702_Act7(runtime, localVars)
-	{
-		executeCardAbilities(localVars,runtime);
-	},
-
-	async EventAutomatic_Event740_Act3(runtime, localVars)
-	{
-		const vars = JSON.parse(localVars.stepVars);
-		runtime.resolveAbility(vars);
-		
-	},
-
-	async EventAutomatic_Event753_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-		runtime.lifeAsDev.cards2 = [];
-	},
-
-	async EventAutomatic_Event758_Act1(runtime, localVars)
-	{
-		
-		runtime.lifeAsDev[localVars.pile].push(
-		runtime.lifeAsDev.card
-		);
-		
-	},
-
-	async EventAutomatic_Event760_Act2(runtime, localVars)
-	{
-		
-		
-		runtime.resolveAbility(runtime.lifeAsDev.cards,runtime.lifeAsDev.cards2);
-		
-	},
-
-	async EventAutomatic_Event761_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event765_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(runtime.lifeAsDev.card);
-		
-	},
-
-	async EventAutomatic_Event777_Act1(runtime, localVars)
-	{
-		runtime.resolveAbility(runtime.lifeAsDev.cards);
-		
-	},
-
-	async EventAutomatic_Event778_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event783_Act1(runtime, localVars)
-	{
-		// Obtener arrays separados
-		const cardUID = localVars.cardsUID;
-		const flags = JSON.parse(localVars.dictionary);
-		const counters = parseCounters(localVars.countersString);
-		const cardData = runtime.lifeAsDev.cardInstances[localVars.cardsUID];
-		
-		runtime.lifeAsDev.cards.push(
-		 {
-		        card: cardData,
-		        cardUID,
-		        counters,
-		        flags:flags.data
-		    }
-		);
-		
-	},
-
-	async EventAutomatic_Event788_Act1(runtime, localVars)
-	{
-		runtime.resolveAbility(runtime.lifeAsDev.cards);
-		
-	},
-
-	async EventAutomatic_Event789_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event791_Act2(runtime, localVars)
-	{
-
-
-runtime.resolveAbility(`group${localVars.picked}`);
-
-	},
-
-	async EventAutomatic_Event797_Act2(runtime, localVars)
-	{
-		runtime.resolveAbility();
-		
-	},
-
-	async EventAutomatic_Event802_Act1(runtime, localVars)
-	{
-		const entry = runtime.lifeAsDev.card;
-		const filters = JSON.parse(localVars.filters);
-		
-		const passed = op.cardMatchesFilters(entry, filters);
-		
-		
-		if (!passed) {
-		    localVars.pickCard = 0;
-		}
-		
-	},
-
-	async EventAutomatic_Event805(runtime, localVars)
-	{
-		const options =JSON.parse(localVars.stringify);
-		localVars.cardsId = options
-		    .map(effect => effect.item.card.card.id) // Extraer los cardId
-		    .join("|"); // Unirlos con "|"
-		
-		localVars.cardsIndex = options
-		    .map(effect => effect.index) // Extraer los cardId
-		    .join("|"); // Unirlos con "|"    
-	},
-
-	async EventAutomatic_Event810(runtime, localVars)
-	{
-		const cards = JSON.parse(localVars.stringify);
-		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
-		
-		arrPeep.setSize(cards.length, 3, 1);
-		
-		for (let i = 0; i < cards.length; i++) {
-		    const cardId = cards[i].card.id;
-		    const cardUID   = cards[i].cardUID;
-		    const marked    = cards[i].flags?.marked ? 1 : 0;
-		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
-		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
-		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
-		}
-		
-	},
-
-	async EventAutomatic_Event814_Act3(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards= JSON.parse(localVars.stringify);
-		
-	},
-
-	async EventAutomatic_Event815(runtime, localVars)
-	{
-		localVars.cardCount = runtime.lifeAsDev.cards[localVars.group].length;
-	},
-
-	async EventAutomatic_Event816_Act2(runtime, localVars)
-	{
-		localVars.mUID = runtime.lifeAsDev.cards[localVars.group][localVars.index].cardUID;
-	},
-
-	async EventAutomatic_Event820(runtime, localVars)
-	{
-		const cards = JSON.parse(localVars.stringify);
-		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
-		
-		arrPeep.setSize(cards.length, 3, 1);
-		
-		for (let i = 0; i < cards.length; i++) {
-		    const cardId = cards[i].card.id;
-		    const cardUID   = cards[i].cardUID;
-		    const marked    = cards[i].flags?.marked ? 1 : 0;
-		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
-		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
-		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
-		}
-		
-	},
-
-	async EventAutomatic_Event825(runtime, localVars)
-	{
-		const cards = JSON.parse(localVars.stringify);
-		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
-		arrPeep.setSize(cards.length, 3, 1);
-		
-		for (let i = 0; i < cards.length; i++) {
-		    const cardId = cards[i].card.id;
-		    const cardUID   = cards[i].cardUID;
-		    const marked    = cards[i].flags?.marked ? 1 : 0;
-		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
-		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
-		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
-		}
-		
-	},
-
-	async EventAutomatic_Event829(runtime, localVars)
-	{
-		const payload = JSON.parse(localVars.stringify);
-		
-		// 1️⃣ extraer cartas y counterType
-		const cards = payload.cards ?? [];
-		runtime.globalVars.counterTypeChoose = payload.counterType ?? "default";
-		
-		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
-		
-		arrPeep.setSize(cards.length, 3, 1);
-		
-		for (let i = 0; i < cards.length; i++) {
-			const cardId  = cards[i].card.id;
-			const cardUID = cards[i].cardUID;
-			const marked  = cards[i].flags?.marked ? 1 : 0;
-		
-			// col 0: cardUID
-			// col 1: cardId
-			// col 2: marked
-			arrPeep.setAt(cardUID, i, 0, 0);
-			arrPeep.setAt(cardId,  i, 1, 0);
-			arrPeep.setAt(marked,  i, 2, 0);
-		}
-		
-	},
-
-	async EventAutomatic_Event833(runtime, localVars)
-	{
-		const cards = JSON.parse(localVars.stringify);
-		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
-		arrPeep.setSize(cards.length, 3, 1);
-		
-		for (let i = 0; i < cards.length; i++) {
-		    const cardId = cards[i].card.id;
-		    const cardUID   = cards[i].cardUID;
-		    const marked    = cards[i].flags?.marked ? 1 : 0;
-		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
-		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
-		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
-		}
-		
-	},
-
-	async EventAutomatic_Event854_Act1(runtime, localVars)
-	{
-		 const card = runtime.lifeAsDev.cardInstances[localVars.mUID];
-		runtime.lifeAsDev.keywordLayer.removeAll(localVars.mUID);
-		
-		runtime.lifeAsDev.keywordLayer.initFromCard(
-		  localVars.mUID,
-		  card
-		);
-		
-		runtime.lifeAsDev.keywordLayer.exportData();
-		
-	},
-
-	async EventAutomatic_Event862(runtime, localVars)
-	{
-		const instanceCard = runtime.objects.card.getFirstPickedInstance();
-		const cardInstance = structuredClone(runtime.lifeAsDev.card);
-		
-		runtime.lifeAsDev.event = {
-		    type: "zoneChange",
-		    cards: [cardInstance],
-		    from: instanceCard.instVars.from.replace("1","").replace("0",""),
-		    to: localVars.arr.replace("1","").replace("0",""),
-		};
-		
-	},
-
-	async EventAutomatic_Event937_Act2(runtime, localVars)
-	{
-		localVars.nextUID = nextUID();
-	},
-
-	async EventAutomatic_Event939(runtime, localVars)
-	{
-		runtime.lifeAsDev.cardInstances[localVars.mUID] = JSON.parse(localVars.dataCard);
-		
-	},
-
-	async EventAutomatic_Event940_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event953_Act1(runtime, localVars)
-	{
-		const cardDataConst =
-		    runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
-		
-		if (!runtime.lifeAsDev.cardInstances[localVars.mUID]) {
-		
-		    runtime.lifeAsDev.cardInstances[localVars.mUID] =
-		        structuredClone(cardDataConst);
-		
-		    const cardData =
-		        runtime.lifeAsDev.cardInstances[localVars.mUID];
-		
-		    cardData.mUID = localVars.mUID;
-		
-		    // ---- RESOLVER TYPE DINÁMICAMENTE ----
-		    const rawTypes = normalizeType(cardData.type);
-		    const resolvedType = resolveTypeByState(rawTypes, localVars.state);
-		
-		    cardData.type = resolvedType; // ← SIEMPRE string
-		}
-		
-	},
-
-	async EventAutomatic_Event953_Act3(runtime, localVars)
-	{
-		const cardData = runtime.lifeAsDev.cardInstances[localVars.mUID];
-		
-		
-		runtime.lifeAsDev.keywordLayer.initFromCard(
-		  localVars.mUID,
-		  cardData
-		);
-		
-		
-		
-	},
-
-	async EventAutomatic_Event954(runtime, localVars)
-	{
-		const instanceCard = runtime.objects.card.getFirstPickedInstance();
-		
-		const cardData1 = runtime.lifeAsDev.cardInstances[localVars.mUID];
-		let cardData = {};
-		if (cardData1) {
-		    cardData = cardData1;
-		} else {
-		    cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
-		
-		}
-		
-		
-		instanceCard.instVars.atk = cardData.atk ?? 0;
-		instanceCard.instVars.def = cardData.def ?? 0;
-		instanceCard.instVars.cardImage = cardData.image ?? "";
-		instanceCard.instVars.cardId = cardData.id ?? "";
-		instanceCard.instVars.token = cardData.isToken ?? 0;
-		instanceCard.instVars.divinity = cardData.divinity ?? 0;
-		
-		const toPipeString = (value) =>
-		    Array.isArray(value)
-		        ? value.join("|")
-		        : value
-		            ? String(value)
-		            : "";
-		
-		// Asignaciones
-		instanceCard.instVars.type = toPipeString(cardData.type);
-		instanceCard.instVars.subtype = toPipeString(cardData.subtype);
-		instanceCard.instVars.produce = toPipeString(cardData.produce);
-	},
-
-	async EventAutomatic_Event992_Act4(runtime, localVars)
-	{
-		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardId];
-		
-		runtime.lifeAsDev.cardInstances[localVars.mUID] = structuredClone(cardData);
 	},
 
 	async EventAutomatic_Event27_Act1(runtime, localVars)
@@ -1186,35 +383,838 @@ window.ChatUI.addMessage(msg, true);
 
 	},
 
-	async EventAutomatic_Event921_Act1(runtime, localVars)
+	async EventAutomatic_Event87_Act1(runtime, localVars)
 	{
-		console.log(runtime.lifeAsDev.keywordLayer);
+
+	},
+
+	async EventAutomatic_Event91_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event92_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event96_Act2(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event97_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event131_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event192(runtime, localVars)
+	{
+		const message = {
+			type:localVars.type,
+			p1:localVars.p1,
+			p2:localVars.p2,
+			p3:localVars.p3,
+			p4:localVars.p4,
+			p5:localVars.p5,
+		    p6:localVars.p6,
+		    p7:localVars.p7
+		}
+		localVars.message = JSON.stringify(message);
+	},
+
+	async EventAutomatic_Event279_Act2(runtime, localVars)
+	{
+		runtime.resolveAbility();
+		
+	},
+
+	async EventAutomatic_Event302_Act3(runtime, localVars)
+	{
+		runtime.resolveAbility(localVars.option);
+	},
+
+	async EventAutomatic_Event314_Act2(runtime, localVars)
+	{
+		runtime.oncePerTurn?.clear();
+	},
+
+	async EventAutomatic_Event356_Act1(runtime, localVars)
+	{
+		  const card = {
+		    card: 
+		    {},
+		   cardUID: "cardUID",
+		    flags: {owner:runtime.globalVars.playerTurn}
+		};
+		          runtime.lifeAsDev.resolve.unshift({
+		                    ability:discardEndTurnTo7Cards,
+		                    event: structuredClone(runtime.lifeAsDev.event),
+		                    card
+		                });
+	},
+
+	async EventAutomatic_Event357_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.keywordLayer.onEndOfTurn();
+		
+		runtime.lifeAsDev.event = {
+		    type: "endTurn",
+		    gameTurn: runtime.globalVars.gameTurn
+		};
+		
+		
+		
+	},
+
+	async EventAutomatic_Event357_Act5(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event363_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.decks = {};
+	},
+
+	async EventAutomatic_Event364_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.decks[localVars.arrType] = [];
+	},
+
+	async EventAutomatic_Event365_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.decks[localVars.arrType].push(runtime.lifeAsDev.card);
+	},
+
+	async EventAutomatic_Event367(runtime, localVars)
+	{
+const resolving = runtime.lifeAsDev.resolve.shift();
+const mainOwner = runtime.globalVars.mainOwner;
+const ctx = {
+    self: {
+        card: resolving.card.card,
+        cardUID: resolving.card.cardUID,
+        flags: resolving.card.flags
+    },
+    trigger: localVars.trigger,
+    allCards: [...runtime.lifeAsDev.cards],
+    event: resolving.event,
+    runtime,
+    decks: runtime.lifeAsDev.decks
+};
+const type = resolving.card.card.type;
+
+
+runtime.callFunction("resolvingEffect",resolving.card.cardUID);
+
+if(resolving.cancelled) {
+    runtime.callFunction("destroyResolveEffect",resolving.card.cardUID);
+    return runtime.callFunction("resolveChase");
+    }
+
+await op.runAbility(ctx, resolving.ability);
+
+runtime.callFunction("destroyResolveEffect",resolving.card.cardUID);
+
+if (type === "Rune"||type ==="Chant" || type === "Master Rune") {
+    const zone = `discard${resolving.card.flags.owner}`;
+
+    runtime.callFunction(
+        "cardToDeck",
+        resolving.card.cardUID,
+        zone,
+        1
+    );
+}
+
+runtime.callFunction("resolveChase");
+
+	},
+
+	async EventAutomatic_Event378_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.resolve = [];
+	},
+
+	async EventAutomatic_Event387_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event387_Act3(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event392(runtime, localVars)
+	{
+		if(runtime.lifeAsDev.resolve.length > 0){
+		    runtime.callFunction("resolveInstance",runtime.lifeAsDev.resolve[0].card.cardUID,"");
+		}else runtime.callFunction("endChase");
+	},
+
+	async EventAutomatic_Event408_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event409(runtime, localVars)
+	{
+		for(let card of runtime.lifeAsDev.resolve){
+		    runtime.callFunction("triggerResolveEffect", card.card.cardUID);
+		}
+		
+	},
+
+	async EventAutomatic_Event421_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event421_Act2(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event422_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event429_Act1(runtime, localVars)
+	{
+		localVars.checked = runtime.lifeAsDev.checked?1:0;
+		
+	},
+
+	async EventAutomatic_Event438_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event513_Act4(runtime, localVars)
+	{
+		runtime.callFunction("showOptions",localVars.stringify+"|");
+	},
+
+	async EventAutomatic_Event516(runtime, localVars)
+	{
+		runtime.lifeAsDev.costs = JSON.parse(localVars.cost);
+		localVars.costCount =runtime.lifeAsDev.costs.length ;
+	},
+
+	async EventAutomatic_Event517_Act2(runtime, localVars)
+	{
+		localVars.produce = runtime.lifeAsDev.costs[localVars.index];
+	},
+
+	async EventAutomatic_Event519_Act4(runtime, localVars)
+	{
+		runtime.resolveAbility(localVars.cost);
+	},
+
+	async EventAutomatic_Event535_Act1(runtime, localVars)
+	{
+		runtime.resolveAbility(1);
+	},
+
+	async EventAutomatic_Event536_Act5(runtime, localVars)
+	{
+		runtime.resolveAbility(0);
+	},
+
+	async EventAutomatic_Event553_Act1(runtime, localVars)
+	{
+		localVars.cardDataStringify = JSON.stringify(runtime.lifeAsDev.cardInstances);
+	},
+
+	async EventAutomatic_Event615_Act1(runtime, localVars)
+	{
+		localVars.checked = runtime.lifeAsDev.checked?1:0;
+		
+	},
+
+	async EventAutomatic_Event639_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event641_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event642_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event644_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event646_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event647_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event649_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event651_Act1(runtime, localVars)
+	{
+		for (let card of runtime.lifeAsDev.cards) {
+		    const ctx = {
+		        self: card,
+		        trigger: "checkCost",
+		        allCards: [...runtime.lifeAsDev.cards],
+		        runtime,
+		        event: runtime.lifeAsDev.event
+		    };
+		
+		    if (!card.card.abilities) continue;
+		    for (const ability of card.card.abilities) {
+		        if (ability.trigger === "automatic") {
+		            const push = op.runAbilitySync(ctx, ability);
+		         
+		            if (push) {
+		                runtime.globalVars.canPay = 1;
+		                runtime.lifeAsDev.resolve.unshift({
+		                    ability,
+		                    event: structuredClone(runtime.lifeAsDev.event),
+		                    card
+		                });
+		
+		            }
+		        }
+		    }
+		}
+		
+		localVars.count = runtime.lifeAsDev.resolve.length;
+	},
+
+	async EventAutomatic_Event653_Act1(runtime, localVars)
+	{
+		for (let card of runtime.lifeAsDev.cards) {
+		    const ctx = {
+		        self: card,
+		        trigger: "continuous",
+		        allCards: [...runtime.lifeAsDev.cards],
+		        runtime,
+		        event: runtime.lifeAsDev.event
+		    };
+		
+		    if (!card.card.abilities) continue;
+		    for (const ability of card.card.abilities) {
+		        if (ability.trigger === "continuous") {
+		            const push = op.runAbility(ctx, ability);
+		       
+		        }
+		    }
+		}
+		
+		localVars.count = runtime.lifeAsDev.resolve.length;
+	},
+
+	async EventAutomatic_Event669_Act3(runtime, localVars)
+	{
+		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
+		
+		runtime.lifeAsDev.cardInstances[localVars.cardUID] = 
+		structuredClone(cardData);
+		
+	},
+
+	async EventAutomatic_Event669_Act4(runtime, localVars)
+	{
+		 const card = runtime.lifeAsDev.cardInstances[localVars.cardUID];
+		
+		runtime.lifeAsDev.keywordLayer.initFromCard(
+		  localVars.cardUID,
+		  card
+		);
+		
+	},
+
+	async EventAutomatic_Event670_Act9(runtime, localVars)
+	{
+		const cardInstance = structuredClone(runtime.lifeAsDev.card);
+		
+		runtime.lifeAsDev.event = {
+		    type: "enter",
+		    cards: [cardInstance]
+		};
+		
+	},
+
+	async EventAutomatic_Event670_Act10(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event673_Act3(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event676_Act11(runtime, localVars)
+	{
+		const cardInstance = structuredClone(runtime.lifeAsDev.card);
+		
+		runtime.lifeAsDev.event = {
+		    type: "enter",
+		    cards: [cardInstance]
+		};
+		
+	},
+
+	async EventAutomatic_Event687(runtime, localVars)
+	{
+		runtime.lifeAsDev.resolving = {
+		    ability: runtime.lifeAsDev.card.card.abilities[localVars.index],
+		    event: structuredClone(runtime.lifeAsDev.event),
+		    card: runtime.lifeAsDev.card
+		};
+		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
+	},
+
+	async EventAutomatic_Event689(runtime, localVars)
+	{
+		runtime.lifeAsDev.resolving = {
+		    ability: runtime.lifeAsDev.card.card.abilities[localVars.skillIndex],
+		    event: structuredClone(runtime.lifeAsDev.event),
+		    card: runtime.lifeAsDev.card
+		};
+		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
+		
+		
+	},
+
+	async EventAutomatic_Event698_Act12(runtime, localVars)
+	{
+		// Obtener arrays separados
+		const cardUID = localVars.cardsUID;
+		const flags = JSON.parse(localVars.dictionary);
+		
+		const cardData = runtime.lifeAsDev.cardInstances[cardUID];
+		
+		runtime.lifeAsDev.card = {
+		    card: cardData,
+		    cardUID,
+		    flags: flags.data
+		};
+	},
+
+	async EventAutomatic_Event699_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event701_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event703_Act7(runtime, localVars)
+	{
+		executeCardAbilities(localVars,runtime);
+	},
+
+	async EventAutomatic_Event741_Act3(runtime, localVars)
+	{
+		const vars = JSON.parse(localVars.stepVars);
+		runtime.resolveAbility(vars);
+		
+	},
+
+	async EventAutomatic_Event754_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+		runtime.lifeAsDev.cards2 = [];
+	},
+
+	async EventAutomatic_Event759_Act1(runtime, localVars)
+	{
+		
+		runtime.lifeAsDev[localVars.pile].push(
+		runtime.lifeAsDev.card
+		);
+		
+	},
+
+	async EventAutomatic_Event761_Act2(runtime, localVars)
+	{
+		
+		
+		runtime.resolveAbility(runtime.lifeAsDev.cards,runtime.lifeAsDev.cards2);
+		
+	},
+
+	async EventAutomatic_Event762_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event766_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(runtime.lifeAsDev.card);
+		
+	},
+
+	async EventAutomatic_Event778_Act1(runtime, localVars)
+	{
+		runtime.resolveAbility(runtime.lifeAsDev.cards);
+		
+	},
+
+	async EventAutomatic_Event779_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event784_Act1(runtime, localVars)
+	{
+		// Obtener arrays separados
+		const cardUID = localVars.cardsUID;
+		const flags = JSON.parse(localVars.dictionary);
+		const counters = parseCounters(localVars.countersString);
+		const cardData = runtime.lifeAsDev.cardInstances[localVars.cardsUID];
+		
+		runtime.lifeAsDev.cards.push(
+		 {
+		        card: cardData,
+		        cardUID,
+		        counters,
+		        flags:flags.data
+		    }
+		);
+		
+	},
+
+	async EventAutomatic_Event789_Act1(runtime, localVars)
+	{
+		runtime.resolveAbility(runtime.lifeAsDev.cards);
+		
+	},
+
+	async EventAutomatic_Event790_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event792_Act2(runtime, localVars)
+	{
+
+
+runtime.resolveAbility(`group${localVars.picked}`);
+
+	},
+
+	async EventAutomatic_Event798_Act2(runtime, localVars)
+	{
+		runtime.resolveAbility();
+		
+	},
+
+	async EventAutomatic_Event803_Act1(runtime, localVars)
+	{
+		const entry = runtime.lifeAsDev.card;
+		const filters = JSON.parse(localVars.filters);
+		
+		const passed = op.cardMatchesFilters(entry, filters);
+		
+		
+		if (!passed) {
+		    localVars.pickCard = 0;
+		}
+		
+	},
+
+	async EventAutomatic_Event806(runtime, localVars)
+	{
+		const options =JSON.parse(localVars.stringify);
+		localVars.cardsId = options
+		    .map(effect => effect.item.card.card.id) // Extraer los cardId
+		    .join("|"); // Unirlos con "|"
+		
+		localVars.cardsIndex = options
+		    .map(effect => effect.index) // Extraer los cardId
+		    .join("|"); // Unirlos con "|"    
+	},
+
+	async EventAutomatic_Event811(runtime, localVars)
+	{
+		const cards = JSON.parse(localVars.stringify);
+		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
+		
+		arrPeep.setSize(cards.length, 3, 1);
+		
+		for (let i = 0; i < cards.length; i++) {
+		    const cardId = cards[i].card.id;
+		    const cardUID   = cards[i].cardUID;
+		    const marked    = cards[i].flags?.marked ? 1 : 0;
+		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
+		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
+		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
+		}
+		
+	},
+
+	async EventAutomatic_Event815_Act3(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards= JSON.parse(localVars.stringify);
+		
+	},
+
+	async EventAutomatic_Event816(runtime, localVars)
+	{
+		localVars.cardCount = runtime.lifeAsDev.cards[localVars.group].length;
+	},
+
+	async EventAutomatic_Event817_Act2(runtime, localVars)
+	{
+		localVars.mUID = runtime.lifeAsDev.cards[localVars.group][localVars.index].cardUID;
+	},
+
+	async EventAutomatic_Event821(runtime, localVars)
+	{
+		const cards = JSON.parse(localVars.stringify);
+		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
+		
+		arrPeep.setSize(cards.length, 3, 1);
+		
+		for (let i = 0; i < cards.length; i++) {
+		    const cardId = cards[i].card.id;
+		    const cardUID   = cards[i].cardUID;
+		    const marked    = cards[i].flags?.marked ? 1 : 0;
+		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
+		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
+		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
+		}
+		
+	},
+
+	async EventAutomatic_Event826(runtime, localVars)
+	{
+		const cards = JSON.parse(localVars.stringify);
+		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
+		arrPeep.setSize(cards.length, 3, 1);
+		
+		for (let i = 0; i < cards.length; i++) {
+		    const cardId = cards[i].card.id;
+		    const cardUID   = cards[i].cardUID;
+		    const marked    = cards[i].flags?.marked ? 1 : 0;
+		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
+		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
+		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
+		}
+		
+	},
+
+	async EventAutomatic_Event830(runtime, localVars)
+	{
+		const payload = JSON.parse(localVars.stringify);
+		
+		// 1️⃣ extraer cartas y counterType
+		const cards = payload.cards ?? [];
+		runtime.globalVars.counterTypeChoose = payload.counterType ?? "default";
+		
+		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
+		
+		arrPeep.setSize(cards.length, 3, 1);
+		
+		for (let i = 0; i < cards.length; i++) {
+			const cardId  = cards[i].card.id;
+			const cardUID = cards[i].cardUID;
+			const marked  = cards[i].flags?.marked ? 1 : 0;
+		
+			// col 0: cardUID
+			// col 1: cardId
+			// col 2: marked
+			arrPeep.setAt(cardUID, i, 0, 0);
+			arrPeep.setAt(cardId,  i, 1, 0);
+			arrPeep.setAt(marked,  i, 2, 0);
+		}
+		
+	},
+
+	async EventAutomatic_Event834(runtime, localVars)
+	{
+		const cards = JSON.parse(localVars.stringify);
+		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
+		arrPeep.setSize(cards.length, 3, 1);
+		
+		for (let i = 0; i < cards.length; i++) {
+		    const cardId = cards[i].card.id;
+		    const cardUID   = cards[i].cardUID;
+		    const marked    = cards[i].flags?.marked ? 1 : 0;
+		    arrPeep.setAt(cardId, i, 1, 0); // columna 0: cardId
+		    arrPeep.setAt(cardUID,   i, 0, 0); // columna 1: cardUID
+		    arrPeep.setAt(marked,    i, 2, 0); // columna 2: marked
+		}
+		
+	},
+
+	async EventAutomatic_Event855_Act1(runtime, localVars)
+	{
+		 const card = runtime.lifeAsDev.cardInstances[localVars.mUID];
+		runtime.lifeAsDev.keywordLayer.removeAll(localVars.mUID);
+		
+		runtime.lifeAsDev.keywordLayer.initFromCard(
+		  localVars.mUID,
+		  card
+		);
+		
+		runtime.lifeAsDev.keywordLayer.exportData();
+		
+	},
+
+	async EventAutomatic_Event863(runtime, localVars)
+	{
+		const instanceCard = runtime.objects.card.getFirstPickedInstance();
+		const cardInstance = structuredClone(runtime.lifeAsDev.card);
+		
+		runtime.lifeAsDev.event = {
+		    type: "zoneChange",
+		    cards: [cardInstance],
+		    from: instanceCard.instVars.from.replace("1","").replace("0",""),
+		    to: localVars.arr.replace("1","").replace("0",""),
+		};
+		
 	},
 
 	async EventAutomatic_Event922_Act1(runtime, localVars)
 	{
+		console.log(runtime.lifeAsDev.keywordLayer);
+	},
+
+	async EventAutomatic_Event923_Act1(runtime, localVars)
+	{
 		console.log(runtime.lifeAsDev.cardInstances);
 	},
 
-	async EventAutomatic_Event923_Act2(runtime, localVars)
+	async EventAutomatic_Event924_Act2(runtime, localVars)
 	{
 		console.log(localVars.cardD,runtime.lifeAsDev.cardInstances[localVars.cardD]);
 	},
 
-	async EventRoomList_Event1_Act5(runtime, localVars)
+	async EventAutomatic_Event938_Act2(runtime, localVars)
 	{
-			runtime.__pendingAbilityResolve = null;
+		localVars.nextUID = nextUID();
+	},
+
+	async EventAutomatic_Event940(runtime, localVars)
+	{
+		runtime.lifeAsDev.cardInstances[localVars.mUID] = JSON.parse(localVars.dataCard);
 		
-			// 2️⃣ Estado lógico del motor
-			runtime.lifeAsDev.resolve = [];
-			runtime.lifeAsDev.endTurnAbilitys = [];
-			runtime.lifeAsDev.cardInstances = {};
-			runtime.lifeAsDev.event = {};
-			runtime.lifeAsDev.keywordLayer = new KeywordLayer(runtime);
-			runtime.oncePerTurn = new Set();
-			runtime.lifeAsDev.DeckCreator.reset?.();
-			runtime.lifeAsDev.DeckCreator.loadFromStorage?.();
+	},
+
+	async EventAutomatic_Event941_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event954_Act1(runtime, localVars)
+	{
+		const cardDataConst =
+		    runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
 		
+		if (!runtime.lifeAsDev.cardInstances[localVars.mUID]) {
+		
+		    runtime.lifeAsDev.cardInstances[localVars.mUID] =
+		        structuredClone(cardDataConst);
+		
+		    const cardData =
+		        runtime.lifeAsDev.cardInstances[localVars.mUID];
+		
+		    cardData.mUID = localVars.mUID;
+		
+		    // ---- RESOLVER TYPE DINÁMICAMENTE ----
+		    const rawTypes = normalizeType(cardData.type);
+		    const resolvedType = resolveTypeByState(rawTypes, localVars.state);
+		
+		    cardData.type = resolvedType; // ← SIEMPRE string
+		}
+		
+	},
+
+	async EventAutomatic_Event954_Act3(runtime, localVars)
+	{
+		const cardData = runtime.lifeAsDev.cardInstances[localVars.mUID];
+		
+		
+		runtime.lifeAsDev.keywordLayer.initFromCard(
+		  localVars.mUID,
+		  cardData
+		);
+		
+		
+		
+	},
+
+	async EventAutomatic_Event955(runtime, localVars)
+	{
+		const instanceCard = runtime.objects.card.getFirstPickedInstance();
+		
+		const cardData1 = runtime.lifeAsDev.cardInstances[localVars.mUID];
+		let cardData = {};
+		if (cardData1) {
+		    cardData = cardData1;
+		} else {
+		    cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
+		
+		}
+		
+		
+		instanceCard.instVars.atk = cardData.atk ?? 0;
+		instanceCard.instVars.def = cardData.def ?? 0;
+		instanceCard.instVars.cardImage = cardData.image ?? "";
+		instanceCard.instVars.cardId = cardData.id ?? "";
+		instanceCard.instVars.token = cardData.isToken ?? 0;
+		instanceCard.instVars.divinity = cardData.divinity ?? 0;
+		
+		const toPipeString = (value) =>
+		    Array.isArray(value)
+		        ? value.join("|")
+		        : value
+		            ? String(value)
+		            : "";
+		
+		// Asignaciones
+		instanceCard.instVars.type = toPipeString(cardData.type);
+		instanceCard.instVars.subtype = toPipeString(cardData.subtype);
+		instanceCard.instVars.produce = toPipeString(cardData.produce);
+	},
+
+	async EventAutomatic_Event993_Act4(runtime, localVars)
+	{
+		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardId];
+		
+		runtime.lifeAsDev.cardInstances[localVars.mUID] = structuredClone(cardData);
 	}
 };
 
