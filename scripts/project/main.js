@@ -41,6 +41,8 @@ runOnStartup(async runtime => {
         if (runtime.__pendingAbilityResolve) {
             runtime.__pendingAbilityResolve(...args);
             runtime.__pendingAbilityResolve = null;
+        } else {
+            console.log("bruh", ...args);
         }
     };
 

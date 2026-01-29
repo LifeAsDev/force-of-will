@@ -1432,8 +1432,8 @@ self.C3_ExpressionFuncs = [
 		() => "wss://multiplayer.construct.net",
 		() => "alias",
 		() => "cardsDataConst",
-		() => "default",
 		() => 2,
+		() => "default",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
@@ -1450,6 +1450,7 @@ self.C3_ExpressionFuncs = [
 		() => "cardStats",
 		() => "LP",
 		() => "endTurn",
+		() => "leave",
 		() => "hover",
 		() => "fight",
 		p => {
@@ -1488,7 +1489,7 @@ self.C3_ExpressionFuncs = [
 			return () => (1 - v0.GetValue());
 		},
 		() => "deckType",
-		() => "game3",
+		() => "ui2",
 		() => "sync",
 		p => {
 			const n0 = p._GetNode(0);
@@ -1550,11 +1551,6 @@ self.C3_ExpressionFuncs = [
 			const v0 = p._GetNode(0).GetVar();
 			return () => (v0.GetValue()).toString();
 		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			return () => f0(n1.ExpObject("message.p4"));
-		},
 		() => "Animation 1",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -1583,12 +1579,14 @@ self.C3_ExpressionFuncs = [
 		() => "counterType",
 		() => "singleDeck",
 		() => "blankExecute",
+		() => "activateAbility",
 		() => "chat",
 		() => "Flying",
 		() => "Unblockable",
 		() => "Resonator",
 		() => "J-Ruler",
 		() => 90,
+		() => "game3",
 		() => "gameTooltip",
 		() => "Defend (Right Click Not Block)",
 		() => "waitInput",
@@ -1633,26 +1631,59 @@ self.C3_ExpressionFuncs = [
 		() => "cardInteractions",
 		p => {
 			const n0 = p._GetNode(0);
-			return () => and(" IID:", n0.ExpObject());
+			return () => (" " + n0.ExpInstVar());
 		},
-		() => "main",
-		() => "cardInfo",
 		p => {
-			const v0 = p._GetNode(0).GetVar();
-			return () => (("cardsDataConst." + v0.GetValue()) + ".text");
+			const n0 = p._GetNode(0);
+			return () => and(" IID:", n0.ExpObject());
 		},
 		p => {
 			const n0 = p._GetNode(0);
 			const v1 = p._GetNode(1).GetVar();
 			return () => n0.ExpObject((("cardsDataConst." + v1.GetValue()) + ".text"));
 		},
+		() => "main",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => ((n0.ExpObject() / 2) + 24);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			const v4 = p._GetNode(4).GetVar();
+			const n5 = p._GetNode(5);
+			const n6 = p._GetNode(6);
+			const v7 = p._GetNode(7).GetVar();
+			return () => ((((n0.ExpObject()) > (((f1() - n2.ExpObject()) + 24)) ? 1 : 0)) ? (((n3.ExpObject() - v4.GetValue()) - n5.ExpObject())) : ((n6.ExpObject() + v7.GetValue())));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const n4 = p._GetNode(4);
+			return () => C3.clamp((n0.ExpObject() - (n1.ExpObject() / 2)), (f2("game1") + 24), ((f3("game1") - n4.ExpObject()) - 24));
+		},
+		() => "cardInfo",
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => (("cardsDataConst." + v0.GetValue()) + ".text");
+		},
 		() => 24,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const v1 = p._GetNode(1).GetVar();
+			return () => f0(v1.GetValue(), ",", "\n");
+		},
 		() => 15,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() + 16);
 		},
 		() => "deckUtils2",
+		() => 1672,
 		() => "Magic Stone",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
@@ -1688,8 +1719,10 @@ self.C3_ExpressionFuncs = [
 			const v0 = p._GetNode(0).GetVar();
 			return () => (1080 - v0.GetValue());
 		},
+		() => "draw",
 		() => "remove",
 		() => "discard",
+		() => "rev. runes",
 		() => "game2",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -1751,7 +1784,7 @@ self.C3_ExpressionFuncs = [
 		() => "Judgement",
 		() => "Will",
 		() => "Use",
-		() => "Energize",
+		() => "Will coin",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject("energize");
@@ -1813,6 +1846,12 @@ self.C3_ExpressionFuncs = [
 		() => "end",
 		() => 7,
 		() => "chase",
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => ("resolveInstance " + v0.GetValue());
+		},
+		() => "playToField",
+		() => "effect",
 		() => "resolve",
 		() => "battleChase",
 		p => {
@@ -1825,6 +1864,7 @@ self.C3_ExpressionFuncs = [
 		() => 54783,
 		() => "Quickcast",
 		() => "activate",
+		() => "active",
 		() => "Skip Chase",
 		() => "Chase (Right Click Skip Chase)",
 		() => "playerInteractions",
@@ -1916,12 +1956,6 @@ self.C3_ExpressionFuncs = [
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
-			return () => (f0(n1.ExpObject()) + 1);
-		},
-		() => "checkCost",
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
 			return () => f0(n1.ExpObject());
 		},
 		p => {
@@ -1932,7 +1966,17 @@ self.C3_ExpressionFuncs = [
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
-			return () => f0(n1.ExpInstVar(), "1", "");
+			return () => f0(n1.ExpInstVar(), "discard");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => f0(n1.ExpInstVar(), "remove");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => f0(n1.ExpInstVar(), "rev. runes");
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -1945,7 +1989,7 @@ self.C3_ExpressionFuncs = [
 		},
 		() => "Use|",
 		() => "Skill1|",
-		() => "Energize|",
+		() => "Will coin|",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => and("stones", n0.ExpInstVar());
@@ -1994,10 +2038,10 @@ self.C3_ExpressionFuncs = [
 			const v2 = p._GetNode(2).GetVar();
 			const v3 = p._GetNode(3).GetVar();
 			const v4 = p._GetNode(4).GetVar();
-			return () => ((v0.GetValue() - 92) + ((f1() * v2.GetValue()) - ((v3.GetValue() * (v4.GetValue() - 1)) / 2)));
+			return () => ((v0.GetValue() - 180) + ((f1() * v2.GetValue()) - ((v3.GetValue() * (v4.GetValue() - 1)) / 2)));
 		},
-		() => 680,
-		() => 424,
+		() => 664,
+		() => 418,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const v1 = p._GetNode(1).GetVar();
@@ -2078,6 +2122,7 @@ self.C3_ExpressionFuncs = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject(0, 3);
 		},
+		() => "sendStep",
 		() => "cards",
 		() => "cards2",
 		() => "from",
@@ -2106,6 +2151,7 @@ self.C3_ExpressionFuncs = [
 			const v0 = p._GetNode(0).GetVar();
 			return () => (and("Deal ", v0.GetValue()) + " Damage");
 		},
+		() => "d",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const v1 = p._GetNode(1).GetVar();
@@ -2125,7 +2171,6 @@ self.C3_ExpressionFuncs = [
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => (f0() + 1);
 		},
-		() => "ui2",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			return () => (v0.GetValue() - 1);
@@ -2133,7 +2178,6 @@ self.C3_ExpressionFuncs = [
 		() => "Choose 1 pile",
 		() => "chooseCardFrom",
 		() => -2,
-		() => 1120,
 		() => 864,
 		() => "ui3",
 		p => {
@@ -2176,6 +2220,12 @@ self.C3_ExpressionFuncs = [
 		p => {
 			const n0 = p._GetNode(0);
 			return () => and("LP ", n0.ExpInstVar());
+		},
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			const v1 = p._GetNode(1).GetVar();
+			const v2 = p._GetNode(2).GetVar();
+			return () => and((((v0.GetValue() + " ") + v1.GetValue()) + " "), v2.GetValue());
 		},
 		p => {
 			const n0 = p._GetNode(0);

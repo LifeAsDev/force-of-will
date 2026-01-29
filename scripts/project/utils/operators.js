@@ -771,7 +771,6 @@ const AbilityHandlers = {
 		if (typeof amount !== "number") {
 			amount = 0;
 		}
-
 		const cards = getTargetCards(ctx, step, step.target);
 		for (let card of cards) {
 			ctx.runtime.callFunction(
@@ -1044,11 +1043,7 @@ const AbilityHandlers = {
 			evaluateCondition(ctx, condition),
 		);
 
-		if (
-			!allConditionsMet ||
-			ctx.trigger === "checkCost" ||
-			ctx.mode === "verify"
-		) {
+		if (ctx.mode === "activate" || ctx.mode === "verify") {
 			throw { abortAbility: true, result: allConditionsMet };
 		}
 	},
@@ -1269,7 +1264,7 @@ const AbilityHandlers = {
 
 		const list = getTargetCards(ctx, step, from);
 		for (let card of list) {
-			ctx.runtime.callFunction("playCard", card.cardUID, owner, -1, -1);
+			ctx.runtime.callFunction("playCard", card.cardUID, owner, -1, 2);
 		}
 	},
 
@@ -1457,6 +1452,7 @@ const INPUT_STEPS = new Set([
 	"chooseChaseEffect",
 	"chooseOne",
 	"dealDividedDamage",
+	"shuffle",
 ]);
 
 function resolveWho(stepWho, ctx) {
@@ -1494,8 +1490,21 @@ async function runAbility(ctx, ability) {
 		return false;
 	}
 	const turnPlayer = ctx.runtime.globalVars.myOwner;
+	console.log(ctx.mode);
+
+	if (
+		ability.steps.every(
+			(step) => step.action !== "checkActivateCost" && ctx.mode !== "resolve",
+		)
+	) {
+		console.log("Without checkActivateCost");
+		return true;
+	}
 	try {
 		for (const step of ability.steps) {
+			if (step.isCost && ctx.mode !== "activate") {
+				continue;
+			}
 			const requiresInput = INPUT_STEPS.has(step.action);
 			if (requiresInput) {
 				const stepPlayer = resolveWho(step.who, ctx);
@@ -1559,6 +1568,10 @@ function runAbilitySync(ctx, ability) {
 		}
 		if (ability.trigger === "awakening") return result.result;
 		for (const step of ability.steps) {
+			if (step.isCost) {
+				continue;
+			}
+
 			const result = runStepSync(ctx, step);
 
 			// Si el handler devolvió una excepción interna, lanzarla

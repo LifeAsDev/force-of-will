@@ -1072,6 +1072,10 @@
         "trigger": "activate",
         "steps": [
           {
+            "action": "log",
+            "value": "resolve"
+          },
+          {
             "action": "peekDeckCards",
             "from": "discard",
             "count": 60,
@@ -1577,10 +1581,6 @@
           {
             "action": "playCard",
             "from": "chosen"
-          },
-          {
-            "action": "shuffle",
-            "target": "deck"
           },
           {
             "action": "sendToDeck",
@@ -2615,6 +2615,22 @@
             "value": "options"
           },
           {
+            "action": "chooseCard",
+            "state": "field",
+            "owner": 1,
+            "type": "Resonator",
+            "count": 1,
+            "value": "toBanish",
+            "isCost": true
+          },
+          {
+            "action": "sendToDeck",
+            "from": "toBanish",
+            "target": "discard",
+            "owner": 1,
+            "isCost": true
+          },
+          {
             "action": "checkActivateCost",
             "conditions": [
               {
@@ -2625,18 +2641,8 @@
             ]
           },
           {
-            "action": "chooseCard",
-            "state": "field",
-            "owner": 1,
-            "type": "Resonator",
-            "count": 1,
-            "value": "toBanish"
-          },
-          {
-            "action": "sendToDeck",
-            "from": "toBanish",
-            "target": "discard",
-            "owner": 1
+            "action": "log",
+            "value": "addCounter"
           },
           {
             "action": "addCounter",
@@ -2647,7 +2653,7 @@
         ]
       },
       {
-        "trigger": "activate",
+        "trigger": "activated",
         "steps": [
           {
             "action": "getTotalCounterCount",
@@ -7515,6 +7521,12 @@
             "action": "sendToDeck",
             "from": "chosenMachines",
             "target": "remove",
+            "owner": 1
+          },
+          {
+            "action": "sendToDeck",
+            "from": "topFiveCards",
+            "target": "discard",
             "owner": 1
           }
         ]

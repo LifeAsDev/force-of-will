@@ -249,6 +249,8 @@ main {
     flex-direction: column;
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
+    font-family: "LeagueSpartan-VariableFont_wght";
+
 }
 
 .messages {
@@ -257,7 +259,6 @@ main {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding-right: 4px;
 }
 
 .message {
@@ -276,14 +277,16 @@ main {
     display: flex;
     gap: 6px;
     margin-top: 6px;
+
 }
 
 #chatInput {
-    flex: 1;
     padding: 6px;
     border-radius: 8px;
     border: none;
     outline: none;
+    flex: 1;
+    min-width: 0;
 }
 
 #sendBtn {
