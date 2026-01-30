@@ -54,6 +54,8 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Exps.viewportleft,
 		C3.Plugins.System.Exps.viewportmidy,
 		C3.Plugins.Json.Cnds.HasKey,
+		C3.Plugins.Browser.Cnds.OnUpdateFound,
+		C3.Plugins.Browser.Cnds.OnUpdateReady,
 		C3.Plugins.Multiplayer.Cnds.SignallingIsConnected,
 		C3.Plugins.Multiplayer.Acts.SignallingConnect,
 		C3.Plugins.Multiplayer.Cnds.OnSignallingLoggedIn,

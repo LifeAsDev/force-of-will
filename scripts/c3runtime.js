@@ -1430,6 +1430,14 @@ self.C3_ExpressionFuncs = [
 			return () => ((f0("bg") * n1.ExpObject()) / n2.ExpObject());
 		},
 		() => "cardsData",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (f0() + " downloading new update");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (f0() + " new version reload to update");
+		},
 		() => "wss://multiplayer.construct.net",
 		() => "alias",
 		() => "cardsDataConst",

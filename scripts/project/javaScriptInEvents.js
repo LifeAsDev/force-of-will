@@ -166,7 +166,7 @@ const scriptsInEvents = {
 		
 	},
 
-	async EventSheet1_Event8_Act2(runtime, localVars)
+	async EventSheet1_Event13_Act2(runtime, localVars)
 	{
 
 	},
