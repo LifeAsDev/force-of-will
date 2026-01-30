@@ -1404,6 +1404,7 @@ function or(l, r)
 self.C3_ExpressionFuncs = [
 		() => "html",
 		() => "css",
+		() => "version",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
