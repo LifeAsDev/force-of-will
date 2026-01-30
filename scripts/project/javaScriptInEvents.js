@@ -187,7 +187,7 @@ const scriptsInEvents = {
 		
 	},
 
-	async EventRoomList_Event5_Act3(runtime, localVars)
+	async EventRoomList_Event4_Act3(runtime, localVars)
 	{
 		Lobby.goToDeck = () => {
 		    runtime.callFunction("goTo","Deck");
@@ -200,7 +200,7 @@ const scriptsInEvents = {
 		};
 	},
 
-	async EventRoomList_Event8(runtime, localVars)
+	async EventRoomList_Event7(runtime, localVars)
 	{
 		const rooms = localVars.roomList.split("|").filter(r => r !== "");
 		
