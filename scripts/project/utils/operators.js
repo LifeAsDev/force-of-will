@@ -950,7 +950,7 @@ const AbilityHandlers = {
 		for (const entry of list) {
 			let absoluteOwner;
 
-			if (step.owner !== undefined) {
+			 if (step.owner !== undefined) {
 				// owner explícito: 1 = self, 0 = opponent
 				const sourceOwner = ctx.self.flags.owner;
 				absoluteOwner =
@@ -959,7 +959,7 @@ const AbilityHandlers = {
 						: sourceOwner ^ 1;
 			} else {
 				// owner real de la carta
-				absoluteOwner = entry.flags.owner;
+				absoluteOwner = entry.flags.originalOwner;
 			}
 
 			// 🔑 AHORA ES DIRECTO: el índice ES el owner
@@ -1164,7 +1164,6 @@ const AbilityHandlers = {
 	destroy(ctx, step) {
 		const list = getTargetCards(ctx, step, step.target);
 		ctx.vars[step.value] = 0;
-
 		for (const entry of list) {
 			ctx.vars[step.value] = 1;
 			const discard = `discard${entry.flags.originalOwner}`;
@@ -1435,6 +1434,7 @@ const AbilityHandlers = {
 // =============================
 async function runStep(ctx, step) {
 	const handler = AbilityHandlers[step.action];
+
 	if (!handler) throw new Error("Unknown action: " + step.action);
 
 	await handler(ctx, step);
@@ -1490,14 +1490,12 @@ async function runAbility(ctx, ability) {
 		return false;
 	}
 	const turnPlayer = ctx.runtime.globalVars.myOwner;
-	console.log(ctx.mode);
 
 	if (
 		ability.steps.every(
 			(step) => step.action !== "checkActivateCost" && ctx.mode !== "resolve",
 		)
 	) {
-		console.log("Without checkActivateCost");
 		return true;
 	}
 	try {
@@ -1571,7 +1569,6 @@ function runAbilitySync(ctx, ability) {
 			if (step.isCost) {
 				continue;
 			}
-
 			const result = runStepSync(ctx, step);
 
 			// Si el handler devolvió una excepción interna, lanzarla

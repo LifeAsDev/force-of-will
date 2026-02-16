@@ -1,161 +1,167 @@
 import * as op from "./utils/operators.js";
-import cardMatchesFilters from "./utils/cardFilters.js"
-import { resolveTypeByState, normalizeType } from "./utils/utils.js"
-import KeywordLayer from "./utils/keywords.js"
+import cardMatchesFilters from "./utils/cardFilters.js";
+import { resolveTypeByState, normalizeType } from "./utils/utils.js";
+import KeywordLayer from "./utils/keywords.js";
 
 let UID_COUNTER = 0;
 
 function nextUID() {
-    UID_COUNTER++;
-    return String(UID_COUNTER);
+	UID_COUNTER++;
+	return String(UID_COUNTER);
 }
 
-
 function sendDeckToRuntime(runtime) {
-    const sections = Object.keys(runtime.lifeAsDev.DeckCreator.deck);
+	const deckCreator = runtime.lifeAsDev.DeckCreator;
+	const activeId = deckCreator.decks.activeId;
+	const sections = Object.keys(deckCreator.decks.items[activeId]);
 
-    for (const sec of sections) {
-        const entries = Object.entries(runtime.lifeAsDev.DeckCreator.deck[sec]); // [name, qty]
-        for (let i = 0; i < entries.length; i++) {
-            const [name, qty] = entries[i];
+	for (const sec of sections) {
+		const entries = Object.entries(deckCreator.decks.items[activeId][sec]); // [name, qty]
+		for (let i = 0; i < entries.length; i++) {
+			const [name, qty] = entries[i];
 
-            // buscar índice dentro de CARD_DATA
-            const CARD_DB = runtime.lifeAsDev.DeckCreator.CARD_DATA;
+			// buscar índice dentro de CARD_DATA
+			const CARD_DB = runtime.lifeAsDev.DeckCreator.CARD_DATA;
+			const card = Object.values(CARD_DB).find((c) => {
+				return c.name.toLowerCase() === name.toLowerCase();
+			});
 
-            const card = Object.values(CARD_DB)
-                .find(c => {
-                    return c.name.toLowerCase() === name.toLowerCase()
-                });
+			if (qty === 0) continue;
 
-            if (!card) {
-                continue;
-            }
+			if (!card) {
+				continue;
+			}
 
+			// determinar el tipo de deck según sección
+			let deckType = "";
+			let isRuler = false;
+			switch (sec) {
+				case "main":
+					deckType = "deck" + runtime.globalVars.myOwner;
 
-            if (qty === 0) continue;
-            // determinar el tipo de deck según sección
-            let deckType = "";
-            let isRuler = false;
-            switch (sec) {
-                case "main":
-                    deckType = "deck" + runtime.globalVars.myOwner;
+					break;
 
-                    break;
+				case "runes":
+					deckType = "rune" + runtime.globalVars.myOwner;
+					break;
 
-                case "runes":
-                    deckType = "rune" + runtime.globalVars.myOwner;
-                    break;
+				case "stones":
+					deckType = "stones" + runtime.globalVars.myOwner;
+					break;
 
-                case "stones":
-                    deckType = "stones" + runtime.globalVars.myOwner;
-                    break;
+				case "ruler":
+					isRuler = true;
+					break;
+			}
 
-                case "ruler":
-                    isRuler = true;
-                    break;
-            }
-
-            // enviar la cantidad correspondiente
-            for (let q = 0; q < qty; q++) {
-                if (isRuler) {
-                    // rulers se envían a createRuler
-                    runtime.callFunction("createRuler", card.id);
-                } else {
-                    runtime.callFunction("sendToDeck", card.id, deckType);
-                    /*      runtime.callFunction("sendToDeck", card.id, "discard" + runtime.globalVars.myOwner); */
-
-                }
-            }
-        }
-    }
+			// enviar la cantidad correspondiente
+			for (let q = 0; q < qty; q++) {
+				if (isRuler) {
+					// rulers se envían a createRuler
+					runtime.callFunction("createRuler", card.id);
+				} else {
+					runtime.callFunction("sendToDeck", card.id, deckType);
+					/*      runtime.callFunction("sendToDeck", card.id, "discard" + runtime.globalVars.myOwner); */
+				}
+			}
+		}
+	}
 }
 
 function executeCardAbilities(localVars, runtime, event) {
-    // Obtener card
-    const card = runtime.lifeAsDev.cardInstances[localVars.mUID] ?? runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardId];
+	// Obtener card
+	const card =
+		runtime.lifeAsDev.cardInstances[localVars.mUID] ??
+		runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardId];
 
-    const flags = JSON.parse(localVars.dictionary);
-    // Construir contexto
-    const ctx = {
-        self: {
-            card,
-            cardUID: localVars.mUID,
-            flags: flags.data
-        },
-        trigger: localVars.trigger,
-        allCards: [...runtime.lifeAsDev.cards],
-        event: event,
-        runtime
-    };
+	const flags = JSON.parse(localVars.dictionary);
+	// Construir contexto
+	const ctx = {
+		self: {
+			card,
+			cardUID: localVars.mUID,
+			flags: flags.data,
+		},
+		trigger: localVars.trigger,
+		allCards: [...runtime.lifeAsDev.cards],
+		event: event,
+		runtime,
+	};
 
-    if (!card.abilities) return;
+	if (!card.abilities) return;
 
-    // Ejecutar abilities
-    if (localVars.skillIndex === -1) {
-        // ejecutar todas las continuous
+	// Ejecutar abilities
+	if (localVars.skillIndex === -1) {
+		// ejecutar todas las continuous
+		let abilityIndex = 0;
+		for (const ability of card.abilities) {
+			if (ability.trigger === localVars.trigger) {
+				if(localVars.trigger === "activate") {
+					runtime.callFunction("canPayCostAbility", localVars.mUID, abilityIndex, "");
+				}
+				ctx.mode = "verify";
 
-        for (const ability of card.abilities) {
-            if (ability.trigger === localVars.trigger) {
-                runtime.lifeAsDev.checked = op.runAbilitySync(ctx, ability);
-            }
-        }
-    } else {
-        // ejecutar habilidad individual
-        if (localVars.trigger === "checkCost") {
-            runtime.lifeAsDev.checked = op.runAbilitySync(ctx, card.abilities[localVars.skillIndex]);
-        } else
-        ctx.mode = "resolve";
-            op.runAbility(ctx, card.abilities[localVars.skillIndex]);
-
-    }
+				runtime.lifeAsDev.checked = op.runAbilitySync(ctx, ability)&&runtime.globalVars.canPay;
+			}
+			abilityIndex++;
+		}
+	} else {
+		// ejecutar habilidad individual
+		if (localVars.trigger === "checkCost") {
+			runtime.lifeAsDev.checked = op.runAbilitySync(
+				ctx,
+				card.abilities[localVars.skillIndex],
+			);
+		} else ctx.mode = "resolve";
+		op.runAbility(ctx, card.abilities[localVars.skillIndex]);
+	}
 }
 
 const discardEndTurnTo7Cards = {
-    trigger: "activate",
-    steps: [
-        {
-            action: "filterCards",
-            state: "hand",
-            owner: 1,
-            value: "hand"
-        },
-        {
-            action: "cardCount",
-            from: "hand",
-            owner: 1,
-            value: "handCount",
-        },
-        {
-            action: "checkConditionAndAbort",
-            conditions: [{
-                op: ">",
-                left: "handCount",
-                right: 7
-            }]
-        },
-        {
-            action: "math",
-            op: "-",
-            a: "handCount",
-            b: 7,
-            result: "discardCount",
-        },
-        {
-            action: "chooseCard",
-            from: "hand",
-            count: "discardCount",
-            value: "chosen",
-        },
-        {
-            action: "sendToDeck",
-            from: "chosen",
-            target: "discard",
-        },
-
-    ],
+	trigger: "activate",
+	steps: [
+		{
+			action: "filterCards",
+			state: "hand",
+			owner: 1,
+			value: "hand",
+		},
+		{
+			action: "cardCount",
+			from: "hand",
+			owner: 1,
+			value: "handCount",
+		},
+		{
+			action: "checkConditionAndAbort",
+			conditions: [
+				{
+					op: ">",
+					left: "handCount",
+					right: 7,
+				},
+			],
+		},
+		{
+			action: "math",
+			op: "-",
+			a: "handCount",
+			b: 7,
+			result: "discardCount",
+		},
+		{
+			action: "chooseCard",
+			from: "hand",
+			count: "discardCount",
+			value: "chosen",
+		},
+		{
+			action: "sendToDeck",
+			from: "chosen",
+			target: "discard",
+		},
+	],
 };
-
-
 
 
 const scriptsInEvents = {
@@ -163,10 +169,10 @@ const scriptsInEvents = {
 	async EventDeck_Event3_Act3(runtime, localVars)
 	{
 		runtime.lifeAsDev.DeckCreator.setupIfReady();
-		
+		runtime.lifeAsDev.DeckCreator.startGame = () => runtime.callFunction("goToRoomList");
 	},
 
-	async EventSheet1_Event13_Act2(runtime, localVars)
+	async EventSheet1_Event12_Act2(runtime, localVars)
 	{
 
 	},
@@ -182,12 +188,10 @@ const scriptsInEvents = {
 			runtime.lifeAsDev.event = {};
 			runtime.lifeAsDev.keywordLayer = new KeywordLayer(runtime);
 			runtime.oncePerTurn = new Set();
-			runtime.lifeAsDev.DeckCreator.reset?.();
-			runtime.lifeAsDev.DeckCreator.loadFromStorage?.();
-		
+			runtime.lifeAsDev.DeckCreator.sharedCards={};
 	},
 
-	async EventRoomList_Event4_Act3(runtime, localVars)
+	async EventRoomList_Event6_Act3(runtime, localVars)
 	{
 		Lobby.goToDeck = () => {
 		    runtime.callFunction("goTo","Deck");
@@ -200,18 +204,30 @@ const scriptsInEvents = {
 		};
 	},
 
-	async EventRoomList_Event7(runtime, localVars)
+	async EventRoomList_Event9(runtime, localVars)
 	{
 		const rooms = localVars.roomList.split("|").filter(r => r !== "");
 		
 		Lobby.updateRoomList(rooms);
 	},
 
+	async EventConnecting_Event3_Act1(runtime, localVars)
+	{
+		localVars.cardsJson = runtime.lifeAsDev.DeckCreator.shareCards();
+	},
+
+	async EventConnecting_Event4_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.DeckCreator.importSharedCards(localVars.cardsJson,false);
+	},
+
 	async EventAutomatic_Event4_Act1(runtime, localVars)
 	{
-		runtime.lifeAsDev.DeckCreator.deck = {
+		const deckCreator = runtime.lifeAsDev.DeckCreator;
+		const activeId = deckCreator.decks.activeId;
+		deckCreator.decks.items[activeId] = {
 		    "ruler": {
-		        "Arthur": 1,"Lucifer":0
+		        "Arthur": 0,"Lucifer":1
 		    },
 		    "main": {
 		        "Freya's Transforming Cane": 0,
@@ -220,7 +236,7 @@ const scriptsInEvents = {
 		        "Mecha Leviathan":0,
 		        "Wheel Drone": 0,
 		        "Precision-Guided Munition, Sky Beat": 0,
-		        "Mordred, the Operator": 0,
+		        "Mordred, the Operator": 1,
 		        "Super Mobile Fortress Camelot": 0,
 		        "Guinevere, The Mobility Queen": 0,
 		        "Skyfall": 0,
@@ -233,37 +249,39 @@ const scriptsInEvents = {
 		        "Mechanical Soldier":0,
 		        "Donut Drone": 0,
 		        "Gawain, the Swift Knight": 0,
-		        "Sky Round Technician": 0,
-		        "Skynet": 5,
-		        "Butterfly Gimmick": 10,
+		        "Sky Round Technician":0,
+		        "Butterfly Gimmick": 0,
+		        "Skynet": 0,
 		        "The Knight's Castle in the Sky, Sky Round": 0,
-		        "Arondight, the Nitrogen Blade": 2,
+		        "Arondight, the Nitrogen Blade": 0,
 		        "Lancelot, the Glass Knight": 0,
 		        "Skeleton Horde":0,
 		        "Wanderer of the Abyss":0,"Azazel, the Fallen Angel of Gloom":0,"Diseased Rat":0,
 		        "Astema, the Returnee of Hatred":0,"Dark Soldier of the Fallen":0,"Armaros, the Fallen Angel of Nullification":0,"Bottomless Chasm of Death, the Abyss":0,"Sacrificial Altar":0,"Belial, the Evil from the Scriptures":0,"Alseid, the Harvester":0,
 		        "Soul Prison":0,
-		        "Orchard of the Immortals":0,"Immortal Commander":0,"corpse sorcerer":1,"March of the Dead":1, "Skynet": 0,"Ocean Beam": 0,"Scrap and Build": 0,
-		        "Whispers of the Devil":0
+		        "Orchard of the Immortals":0,"Immortal Commander":0,"corpse sorcerer":0,"March of the Dead":0,"Ocean Beam": 0,"Scrap and Build": 0,
+		        "Whispers of the Devil":0,"Believer Blinded by Faith":0,"Remote Control Golem":0,"Fallen Angel of the Ritual":0,"Hansel of Misty Woods":0
 		    },
 		    "stones": {
 		        "Magic Stone of Chaos": 8,
 		        "Magic Stone of Dramaturgy": 0,
-		        "Water Magic Stone": 4,"Darkness Magic Stone": 8,
+		        "Water Magic Stone": 0,"Darkness Magic Stone": 8,
 		        "Magic Stone of the Undead":0, 
 		        "Magic Stone of Corruption":0,
 		    },
 		    "runes": {
-		        "Ocean Beam": 0,
-		        "Scrap and Build": 1,
-		        "Anti-Matter Cannon, Excalibur": 0,
-		        "Caliburn, the Sword of Judgment": 0,
+		        "Ocean Beam": 1,
+		        "Scrap and Build": 0,
+		        "Anti-Matter Cannon, Excalibur": 1,
+		        "Caliburn, the Sword of Judgment": 1,
 		        "Maintenance": 0,"Demon Division":0,
 		        "Jet-Black Wings":0,"Black Rosario":0,
-		        "Skynet": 0,"Whispers of the Devil":1,"Undeath":1
+		        "Skynet": 0,"Whispers of the Devil":0,"Undeath":0,"Soul Prison":0
 		    },
 		    "side": {}
-		}
+		};
+		
+		
 	},
 
 	async EventAutomatic_Event12_Act3(runtime, localVars)
@@ -273,7 +291,17 @@ const scriptsInEvents = {
 		};
 	},
 
-	async EventAutomatic_Event27_Act1(runtime, localVars)
+	async EventAutomatic_Event13_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.DeckCreator.importSharedCards(localVars.cardsJson,true);
+	},
+
+	async EventAutomatic_Event13_Act3(runtime, localVars)
+	{
+		localVars.cardsJson = runtime.lifeAsDev.DeckCreator.shareCards();
+	},
+
+	async EventAutomatic_Event28_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.DeckCreator.deck = {
 		    "ruler": {
@@ -322,7 +350,7 @@ const scriptsInEvents = {
 		}
 	},
 
-	async EventAutomatic_Event29_Act1(runtime, localVars)
+	async EventAutomatic_Event30_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.DeckCreator.deck ={
 		    "ruler": {
@@ -369,12 +397,12 @@ const scriptsInEvents = {
 		
 	},
 
-	async EventAutomatic_Event33_Act1(runtime, localVars)
+	async EventAutomatic_Event34_Act1(runtime, localVars)
 	{
 		sendDeckToRuntime(runtime);
 	},
 
-	async EventAutomatic_Event80_Act1(runtime, localVars)
+	async EventAutomatic_Event82_Act1(runtime, localVars)
 	{
 let msg = localVars.p1;
 
@@ -386,37 +414,37 @@ window.ChatUI.addMessage(msg, true);
 
 	},
 
-	async EventAutomatic_Event87_Act1(runtime, localVars)
+	async EventAutomatic_Event89_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event91_Act1(runtime, localVars)
+	async EventAutomatic_Event93_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event92_Act1(runtime, localVars)
+	async EventAutomatic_Event94_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event96_Act2(runtime, localVars)
+	async EventAutomatic_Event98_Act2(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event97_Act1(runtime, localVars)
+	async EventAutomatic_Event99_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event131_Act1(runtime, localVars)
+	async EventAutomatic_Event133_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event192(runtime, localVars)
+	async EventAutomatic_Event196(runtime, localVars)
 	{
 		const message = {
 			type:localVars.type,
@@ -431,22 +459,22 @@ window.ChatUI.addMessage(msg, true);
 		localVars.message = JSON.stringify(message);
 	},
 
-	async EventAutomatic_Event288_Act2(runtime, localVars)
+	async EventAutomatic_Event292_Act2(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event311_Act3(runtime, localVars)
+	async EventAutomatic_Event315_Act3(runtime, localVars)
 	{
 		runtime.resolveAbility(localVars.option);
 	},
 
-	async EventAutomatic_Event323_Act2(runtime, localVars)
+	async EventAutomatic_Event327_Act2(runtime, localVars)
 	{
 		runtime.oncePerTurn?.clear();
 	},
 
-	async EventAutomatic_Event365_Act1(runtime, localVars)
+	async EventAutomatic_Event372_Act1(runtime, localVars)
 	{
 		  const card = {
 		    card: 
@@ -461,7 +489,7 @@ window.ChatUI.addMessage(msg, true);
 		                });
 	},
 
-	async EventAutomatic_Event366_Act1(runtime, localVars)
+	async EventAutomatic_Event373_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.keywordLayer.onEndOfTurn();
 		
@@ -474,40 +502,40 @@ window.ChatUI.addMessage(msg, true);
 		
 	},
 
-	async EventAutomatic_Event366_Act5(runtime, localVars)
+	async EventAutomatic_Event373_Act4(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event372_Act1(runtime, localVars)
+	async EventAutomatic_Event379_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.decks = {};
 	},
 
-	async EventAutomatic_Event373_Act2(runtime, localVars)
+	async EventAutomatic_Event380_Act2(runtime, localVars)
 	{
 		runtime.lifeAsDev.decks[localVars.arrType] = [];
 	},
 
-	async EventAutomatic_Event374_Act2(runtime, localVars)
+	async EventAutomatic_Event381_Act2(runtime, localVars)
 	{
 		runtime.lifeAsDev.decks[localVars.arrType].push(runtime.lifeAsDev.card);
 	},
 
-	async EventAutomatic_Event376(runtime, localVars)
+	async EventAutomatic_Event383(runtime, localVars)
 	{
 		const resolving = runtime.lifeAsDev.resolve[0];
 		localVars.resolveType = resolving.action ?? "effect";
 		
 	},
 
-	async EventAutomatic_Event378(runtime, localVars)
+	async EventAutomatic_Event385(runtime, localVars)
 	{
 		const resolving = runtime.lifeAsDev.resolve.shift();
 		
 	},
 
-	async EventAutomatic_Event383(runtime, localVars)
+	async EventAutomatic_Event390(runtime, localVars)
 	{
 const resolving = runtime.lifeAsDev.resolve.shift();
 const mainOwner = runtime.globalVars.mainOwner;
@@ -541,7 +569,6 @@ runtime.callFunction("destroyResolveEffect",resolving.card.cardUID);
 if (type === "Rune"||type ==="Chant" || type === "Master Rune") {
     const deck = type === "Chant" ? "discard" : "rev. runes";
     const zone = `${deck}${resolving.card.flags.owner}`;
-console.log(zone);
     runtime.callFunction(
         "cardToDeck",
         resolving.card.cardUID,
@@ -554,39 +581,39 @@ runtime.callFunction("resolveChase");
 
 	},
 
-	async EventAutomatic_Event394_Act2(runtime, localVars)
+	async EventAutomatic_Event401_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.resolve = [];
 	},
 
-	async EventAutomatic_Event403_Act1(runtime, localVars)
+	async EventAutomatic_Event410_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event403_Act3(runtime, localVars)
+	async EventAutomatic_Event410_Act3(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event406_Act4(runtime, localVars)
+	async EventAutomatic_Event413_Act3(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event408(runtime, localVars)
+	async EventAutomatic_Event415(runtime, localVars)
 	{
 		if(runtime.lifeAsDev.resolve.length > 0){
 		    runtime.callFunction("resolveInstance",runtime.lifeAsDev.resolve[0].card.cardUID,"");
 		}else runtime.callFunction("endChase");
 	},
 
-	async EventAutomatic_Event424_Act1(runtime, localVars)
+	async EventAutomatic_Event431_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event425(runtime, localVars)
+	async EventAutomatic_Event432(runtime, localVars)
 	{
 		for(let card of runtime.lifeAsDev.resolve){
 		    if(card.action !== "playToField")
@@ -595,54 +622,76 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event438_Act1(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event438_Act2(runtime, localVars)
-	{
-
-	},
-
-	async EventAutomatic_Event439_Act1(runtime, localVars)
-	{
-
-	},
-
 	async EventAutomatic_Event445_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event445_Act2(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event446_Act1(runtime, localVars)
+	{
+
+	},
+
+	async EventAutomatic_Event452_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.checked = false;
+	},
+
+	async EventAutomatic_Event453_Act1(runtime, localVars)
 	{
 		localVars.checked = runtime.lifeAsDev.checked?1:0;
 		
 	},
 
-	async EventAutomatic_Event454_Act1(runtime, localVars)
+	async EventAutomatic_Event455_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.checked = false;
+	},
+
+	async EventAutomatic_Event455_Act3(runtime, localVars)
+	{
+		localVars.checked = runtime.lifeAsDev.checked?
+		1:0;
+		
+	},
+
+	async EventAutomatic_Event456_Act5(runtime, localVars)
+	{
+		console.log(localVars.cardD,runtime.lifeAsDev.cardInstances[localVars.cardD]);
+	},
+
+	async EventAutomatic_Event464_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event536_Act4(runtime, localVars)
+	async EventAutomatic_Event546_Act4(runtime, localVars)
 	{
 		runtime.callFunction("showOptions",localVars.stringify+"|");
 	},
 
-	async EventAutomatic_Event539(runtime, localVars)
+	async EventAutomatic_Event549(runtime, localVars)
 	{
 		runtime.lifeAsDev.costs = JSON.parse(localVars.cost);
 		localVars.costCount =runtime.lifeAsDev.costs.length ;
 	},
 
-	async EventAutomatic_Event540_Act2(runtime, localVars)
+	async EventAutomatic_Event550_Act2(runtime, localVars)
 	{
 		localVars.produce = runtime.lifeAsDev.costs[localVars.index];
 	},
 
-	async EventAutomatic_Event542_Act4(runtime, localVars)
+	async EventAutomatic_Event552_Act4(runtime, localVars)
 	{
 		runtime.resolveAbility(localVars.cost);
 	},
 
-	async EventAutomatic_Event547(runtime, localVars)
+	async EventAutomatic_Event557(runtime, localVars)
 	{
 		const resolving = runtime.lifeAsDev.card
 		const mUID = localVars.mUID;
@@ -666,7 +715,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event551(runtime, localVars)
+	async EventAutomatic_Event561(runtime, localVars)
 	{
 		const resolving = runtime.lifeAsDev.card
 		
@@ -686,64 +735,33 @@ runtime.callFunction("resolveChase");
 		runtime.lifeAsDev.checked = op.runAbilitySync(ctx, resolving.card.abilities[localVars.index]);
 	},
 
-	async EventAutomatic_Event566_Act1(runtime, localVars)
+	async EventAutomatic_Event575_Act1(runtime, localVars)
 	{
 		runtime.resolveAbility(1);
 	},
 
-	async EventAutomatic_Event567_Act5(runtime, localVars)
+	async EventAutomatic_Event576_Act5(runtime, localVars)
 	{
 		runtime.resolveAbility(0);
 	},
 
-	async EventAutomatic_Event584_Act1(runtime, localVars)
+	async EventAutomatic_Event593_Act1(runtime, localVars)
 	{
 		localVars.cardDataStringify = JSON.stringify(runtime.lifeAsDev.cardInstances);
 	},
 
-	async EventAutomatic_Event647_Act1(runtime, localVars)
+	async EventAutomatic_Event656_Act1(runtime, localVars)
 	{
 		localVars.checked = runtime.lifeAsDev.checked?1:0;
 		
 	},
 
-	async EventAutomatic_Event671_Act1(runtime, localVars)
+	async EventAutomatic_Event680_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 	},
 
-	async EventAutomatic_Event673_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event674_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event676_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event678_Act2(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards.push(
-		runtime.lifeAsDev.card
-		);
-	},
-
-	async EventAutomatic_Event679_Act1(runtime, localVars)
-	{
-		runtime.lifeAsDev.cards = [];
-	},
-
-	async EventAutomatic_Event681_Act2(runtime, localVars)
+	async EventAutomatic_Event682_Act2(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards.push(
 		runtime.lifeAsDev.card
@@ -751,6 +769,37 @@ runtime.callFunction("resolveChase");
 	},
 
 	async EventAutomatic_Event683_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event685_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event687_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event688_Act1(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards = [];
+	},
+
+	async EventAutomatic_Event690_Act2(runtime, localVars)
+	{
+		runtime.lifeAsDev.cards.push(
+		runtime.lifeAsDev.card
+		);
+	},
+
+	async EventAutomatic_Event692_Act1(runtime, localVars)
 	{
 		for (let card of runtime.lifeAsDev.cards) {
 		    const ctx = {
@@ -783,7 +832,7 @@ runtime.callFunction("resolveChase");
 		localVars.count = runtime.lifeAsDev.resolve.length;
 	},
 
-	async EventAutomatic_Event685_Act1(runtime, localVars)
+	async EventAutomatic_Event694_Act1(runtime, localVars)
 	{
 		for (let card of runtime.lifeAsDev.cards) {
 		    const ctx = {
@@ -807,7 +856,7 @@ runtime.callFunction("resolveChase");
 		localVars.count = runtime.lifeAsDev.resolve.length;
 	},
 
-	async EventAutomatic_Event701_Act3(runtime, localVars)
+	async EventAutomatic_Event710_Act3(runtime, localVars)
 	{
 		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
 		
@@ -816,7 +865,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event701_Act4(runtime, localVars)
+	async EventAutomatic_Event710_Act4(runtime, localVars)
 	{
 		 const card = runtime.lifeAsDev.cardInstances[localVars.cardUID];
 		
@@ -827,7 +876,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event702_Act9(runtime, localVars)
+	async EventAutomatic_Event711_Act9(runtime, localVars)
 	{
 		const cardInstance = structuredClone(runtime.lifeAsDev.card);
 		
@@ -838,17 +887,17 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event702_Act10(runtime, localVars)
+	async EventAutomatic_Event711_Act10(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event705_Act3(runtime, localVars)
+	async EventAutomatic_Event714_Act3(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event708_Act11(runtime, localVars)
+	async EventAutomatic_Event717_Act11(runtime, localVars)
 	{
 		const cardInstance = structuredClone(runtime.lifeAsDev.card);
 		
@@ -859,7 +908,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event716(runtime, localVars)
+	async EventAutomatic_Event725(runtime, localVars)
 	{
 		runtime.lifeAsDev.resolving = {
 		    action: "playToField",
@@ -868,7 +917,7 @@ runtime.callFunction("resolveChase");
 		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
 	},
 
-	async EventAutomatic_Event726(runtime, localVars)
+	async EventAutomatic_Event735(runtime, localVars)
 	{
 		runtime.lifeAsDev.resolving = {
 		    ability: runtime.lifeAsDev.card.card.abilities[localVars.index],
@@ -878,7 +927,7 @@ runtime.callFunction("resolveChase");
 		runtime.lifeAsDev.resolve.unshift(runtime.lifeAsDev.resolving);
 	},
 
-	async EventAutomatic_Event728(runtime, localVars)
+	async EventAutomatic_Event737(runtime, localVars)
 	{
 		runtime.lifeAsDev.resolving = {
 		    ability: runtime.lifeAsDev.card.card.abilities[localVars.skillIndex],
@@ -890,7 +939,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event737_Act12(runtime, localVars)
+	async EventAutomatic_Event746_Act12(runtime, localVars)
 	{
 		// Obtener arrays separados
 		const cardUID = localVars.cardsUID;
@@ -905,37 +954,37 @@ runtime.callFunction("resolveChase");
 		};
 	},
 
-	async EventAutomatic_Event738_Act1(runtime, localVars)
+	async EventAutomatic_Event747_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 	},
 
-	async EventAutomatic_Event740_Act2(runtime, localVars)
+	async EventAutomatic_Event749_Act2(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards.push(
 		runtime.lifeAsDev.card
 		);
 	},
 
-	async EventAutomatic_Event742_Act7(runtime, localVars)
+	async EventAutomatic_Event751_Act7(runtime, localVars)
 	{
 		executeCardAbilities(localVars,runtime);
 	},
 
-	async EventAutomatic_Event781_Act4(runtime, localVars)
+	async EventAutomatic_Event795_Act3(runtime, localVars)
 	{
 		const vars = JSON.parse(localVars.stepVars);
 		runtime.resolveAbility(vars);
 		
 	},
 
-	async EventAutomatic_Event793_Act1(runtime, localVars)
+	async EventAutomatic_Event807_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 		runtime.lifeAsDev.cards2 = [];
 	},
 
-	async EventAutomatic_Event798_Act1(runtime, localVars)
+	async EventAutomatic_Event812_Act1(runtime, localVars)
 	{
 		
 		runtime.lifeAsDev[localVars.pile].push(
@@ -944,7 +993,7 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event800_Act2(runtime, localVars)
+	async EventAutomatic_Event814_Act2(runtime, localVars)
 	{
 		
 		
@@ -952,29 +1001,29 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event801_Act1(runtime, localVars)
+	async EventAutomatic_Event815_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 	},
 
-	async EventAutomatic_Event805_Act1(runtime, localVars)
+	async EventAutomatic_Event819_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards.push(runtime.lifeAsDev.card);
 		
 	},
 
-	async EventAutomatic_Event817_Act1(runtime, localVars)
+	async EventAutomatic_Event831_Act1(runtime, localVars)
 	{
 		runtime.resolveAbility(runtime.lifeAsDev.cards);
 		
 	},
 
-	async EventAutomatic_Event818_Act1(runtime, localVars)
+	async EventAutomatic_Event832_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 	},
 
-	async EventAutomatic_Event823_Act1(runtime, localVars)
+	async EventAutomatic_Event837_Act1(runtime, localVars)
 	{
 		// Obtener arrays separados
 		const cardUID = localVars.cardsUID;
@@ -993,18 +1042,18 @@ runtime.callFunction("resolveChase");
 		
 	},
 
-	async EventAutomatic_Event828_Act1(runtime, localVars)
+	async EventAutomatic_Event842_Act1(runtime, localVars)
 	{
 		runtime.resolveAbility(runtime.lifeAsDev.cards);
 		
 	},
 
-	async EventAutomatic_Event829_Act1(runtime, localVars)
+	async EventAutomatic_Event843_Act1(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards = [];
 	},
 
-	async EventAutomatic_Event831_Act2(runtime, localVars)
+	async EventAutomatic_Event845_Act2(runtime, localVars)
 	{
 
 
@@ -1012,13 +1061,13 @@ runtime.resolveAbility(`group${localVars.picked}`);
 
 	},
 
-	async EventAutomatic_Event837_Act2(runtime, localVars)
+	async EventAutomatic_Event851_Act2(runtime, localVars)
 	{
 		runtime.resolveAbility();
 		
 	},
 
-	async EventAutomatic_Event842_Act1(runtime, localVars)
+	async EventAutomatic_Event856_Act1(runtime, localVars)
 	{
 		const entry = runtime.lifeAsDev.card;
 		const filters = JSON.parse(localVars.filters);
@@ -1032,7 +1081,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event845(runtime, localVars)
+	async EventAutomatic_Event859(runtime, localVars)
 	{
 		const options =JSON.parse(localVars.stringify);
 		localVars.cardsId = options
@@ -1044,7 +1093,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		    .join("|"); // Unirlos con "|"    
 	},
 
-	async EventAutomatic_Event850(runtime, localVars)
+	async EventAutomatic_Event864(runtime, localVars)
 	{
 		const cards = JSON.parse(localVars.stringify);
 		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
@@ -1062,23 +1111,23 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event854_Act3(runtime, localVars)
+	async EventAutomatic_Event868_Act3(runtime, localVars)
 	{
 		runtime.lifeAsDev.cards= JSON.parse(localVars.stringify);
 		
 	},
 
-	async EventAutomatic_Event855(runtime, localVars)
+	async EventAutomatic_Event869(runtime, localVars)
 	{
 		localVars.cardCount = runtime.lifeAsDev.cards[localVars.group].length;
 	},
 
-	async EventAutomatic_Event856_Act2(runtime, localVars)
+	async EventAutomatic_Event870_Act2(runtime, localVars)
 	{
 		localVars.mUID = runtime.lifeAsDev.cards[localVars.group][localVars.index].cardUID;
 	},
 
-	async EventAutomatic_Event860(runtime, localVars)
+	async EventAutomatic_Event874(runtime, localVars)
 	{
 		const cards = JSON.parse(localVars.stringify);
 		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
@@ -1096,7 +1145,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event865(runtime, localVars)
+	async EventAutomatic_Event879(runtime, localVars)
 	{
 		const cards = JSON.parse(localVars.stringify);
 		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
@@ -1113,7 +1162,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event869(runtime, localVars)
+	async EventAutomatic_Event883(runtime, localVars)
 	{
 		const payload = JSON.parse(localVars.stringify);
 		
@@ -1140,7 +1189,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event873(runtime, localVars)
+	async EventAutomatic_Event887(runtime, localVars)
 	{
 		const cards = JSON.parse(localVars.stringify);
 		const arrPeep = runtime.objects.arrPeep.getFirstInstance();
@@ -1157,7 +1206,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event894_Act1(runtime, localVars)
+	async EventAutomatic_Event908_Act1(runtime, localVars)
 	{
 		 const card = runtime.lifeAsDev.cardInstances[localVars.mUID];
 		runtime.lifeAsDev.keywordLayer.removeAll(localVars.mUID);
@@ -1171,7 +1220,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event902(runtime, localVars)
+	async EventAutomatic_Event916(runtime, localVars)
 	{
 		const instanceCard = runtime.objects.card.getFirstPickedInstance();
 		const cardInstance = structuredClone(runtime.lifeAsDev.card);
@@ -1185,38 +1234,38 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event962_Act1(runtime, localVars)
+	async EventAutomatic_Event977_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event963_Act1(runtime, localVars)
+	async EventAutomatic_Event978_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event964_Act2(runtime, localVars)
+	async EventAutomatic_Event979_Act2(runtime, localVars)
 	{
 		console.log(localVars.cardD,runtime.lifeAsDev.cardInstances[localVars.cardD]);
 	},
 
-	async EventAutomatic_Event980_Act2(runtime, localVars)
+	async EventAutomatic_Event995_Act2(runtime, localVars)
 	{
 		localVars.nextUID = nextUID();
 	},
 
-	async EventAutomatic_Event982(runtime, localVars)
+	async EventAutomatic_Event997(runtime, localVars)
 	{
 		runtime.lifeAsDev.cardInstances[localVars.mUID] = JSON.parse(localVars.dataCard);
 		
 	},
 
-	async EventAutomatic_Event983_Act1(runtime, localVars)
+	async EventAutomatic_Event998_Act1(runtime, localVars)
 	{
 
 	},
 
-	async EventAutomatic_Event996_Act1(runtime, localVars)
+	async EventAutomatic_Event1011_Act1(runtime, localVars)
 	{
 		const cardDataConst =
 		    runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardID];
@@ -1240,7 +1289,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event996_Act3(runtime, localVars)
+	async EventAutomatic_Event1011_Act3(runtime, localVars)
 	{
 		const cardData = runtime.lifeAsDev.cardInstances[localVars.mUID];
 		
@@ -1254,7 +1303,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		
 	},
 
-	async EventAutomatic_Event997(runtime, localVars)
+	async EventAutomatic_Event1012(runtime, localVars)
 	{
 		const instanceCard = runtime.objects.card.getFirstPickedInstance();
 		
@@ -1288,7 +1337,7 @@ runtime.resolveAbility(`group${localVars.picked}`);
 		instanceCard.instVars.produce = toPipeString(cardData.produce);
 	},
 
-	async EventAutomatic_Event1035_Act4(runtime, localVars)
+	async EventAutomatic_Event1053_Act4(runtime, localVars)
 	{
 		const cardData = runtime.lifeAsDev.DeckCreator.CARD_DATA[localVars.cardId];
 		
